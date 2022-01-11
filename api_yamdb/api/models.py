@@ -38,8 +38,7 @@ class Titles(models.Model):
     )
     genre = models.ManyToManyField(
         Genres,
-        related_name="title", null=True
-    )
+        related_name="title")
 
     def __str__(self):
         return self.name[:15]
