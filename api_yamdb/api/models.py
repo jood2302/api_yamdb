@@ -10,9 +10,6 @@ class Categories(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True)
 
-    def __unicode__(self):
-        return u'%s'%(self.name)
-
     def __str__(self):
         return self.name[:15]
 
