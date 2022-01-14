@@ -21,11 +21,14 @@ class Genres(models.Model):
     def __str__(self):
         return self.name[:15]
 
+
 def correctyear(data):
     year = dt.date.today().year
     if year < data:
         raise ValidationError("Некорректная дата")
     return data
+
+
 class Titles(models.Model):
     name = models.TextField()
     year = models.IntegerField(db_index=True, validators=[correctyear])
@@ -42,5 +45,3 @@ class Titles(models.Model):
 
     def __str__(self):
         return self.name[:15]
-    
-    

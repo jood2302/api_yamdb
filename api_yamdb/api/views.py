@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 from rest_framework import filters, mixins
-from .models import Categories, Genres, Titles
+from reviews.models import Categories, Genres, Titles
 from .serializers import CategoriesSerializer, GenresSerializer, TitlesSerializer
 from .permissions import IsAdminOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
