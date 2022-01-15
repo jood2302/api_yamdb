@@ -1,80 +1,61 @@
 from django.contrib import admin
-from reviews.models import Category, Comment, Genre, Review, Title
+
+from import_export.admin import ImportExportActionModelAdmin
+from import_export import resources
+from .models import Categories, Genres, Titles, Review, Comment
 
 
-class CategorysInstanceInline(admin.TabularInline):
-    model = Category
+class CategoriesResources(resources.ModelResource):
+    class Meta:
+        model = Categories
 
 
-class GenreInstanceInline(admin.TabularInline):
-    model = Genre
+class CategoriesAdmin(ImportExportActionModelAdmin):
+    list_display = ('name', 'slug')
+    resources_class = CategoriesResources
 
 
-class TitlesInstanceInline(admin.TabularInline):
-    model = Title
+class GenresResources(resources.ModelResource):
+    class Meta:
+        model = Genres
 
 
-class TitleGenreInline(admin.TabularInline):
-    model = Title.genre.through
+class GenresAdmin(ImportExportActionModelAdmin):
+    list_display = ('name', 'slug')
+    resources_class = GenresResources
 
 
-class ReviewsInstanceInline(admin.TabularInline):
-    model = Review
-    fields = ('id', 'title', 'text', 'author', 'score')
+class TitlesResources(resources.ModelResource):
+    class Meta:
+        model = Titles
 
 
-class CommentsInstanceInline(admin.TabularInline):
-    model = Comment
+class TitlesAdmin(ImportExportActionModelAdmin):
+    resources_class = TitlesResources
 
 
-@admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'slug')
-    list_display_links = list_display
-    prepopulated_fields = {'slug': ('name',)}
-    inlines = (TitlesInstanceInline,)
+class CommentResources(resources.ModelResource):
+    class Meta:
+        model = Comment
 
 
-@admin.register(Genre)
-class GenreAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'slug')
-    prepopulated_fields = {'slug': ('name',)}
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ('id', 'review', 'text', 'pub_date')
+    resources_class = CommentResources
 
 
-@admin.register(Title)
-class TitleAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'year', 'category',)
-    inlines = [
-        TitleGenreInline,
-    ]
-    exclude = ('genres',)
-
-
-class ReviewsInstanceInline(admin.TabularInline):
-    model = Review
-    fields = ('id', 'title', 'text', 'author', 'score')
-
-
-class CommentsInstanceInline(admin.TabularInline):
-    model = Comment
-    inlines = (ReviewsInstanceInline,)
-    list_display = ('id', 'name', 'year', 'category')
-    list_display_links = list_display
-
-
-@admin.register(Review)
-class ReviewAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'text', 'author', 'score', 'pub_date')
-    list_display_links = ['id', 'title', 'text', 'author', 'score', 'pub_date']
-    list_filter = ['title', 'text', 'author', 'score', 'pub_date']
-    search_fields = ['id', 'title', 'text', 'author', 'score', 'pub_date']
-    inlines = (CommentsInstanceInline,)
-
+class ReviewResources(resources.ModelResource):
     class Meta:
         model = Review
 
+class ReviewAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title', 'text', 'author', 'score', 'pub_date')
+    resources_class = ReviewResources
 
-@admin.register(Comment)
-class CommentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'review', 'text', 'pub_date')
-    list_display_links = list_display
+
+admin.site.register(Categories, CategoriesAdmin)
+admin.site.register(Genres, CategoriesAdmin)
+admin.site.register(Titles, TitlesAdmin)
+admin.site.register(Comment, CommentAdmin)
+admin.site.register(Review, ReviewAdmin)
+

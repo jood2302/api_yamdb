@@ -1,110 +1,54 @@
 from django.db import models
 from django.utils import timezone
 from pytils.translit import slugify
-from users.models import User
+from django.contrib.auth import get_user_model
+from django.db import models
+import datetime as dt
+from django.core.exceptions import ValidationError
 
 
-class Category(models.Model):
-    """Категории 'произведений'. Разделы на портале.
+User = get_user_model()
 
-    Произведения делятся на категории: «Книги», «Фильмы», «Музыка».
-    Список категорий (Category) может быть расширен администратором
-    (например, можно добавить категорию «Изобразительное искусство»
-    или «Ювелирка»).
-    """
-    name = models.CharField(
-        max_length=200,
-        unique=True
-    )
+
+class Categories(models.Model):
+    name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True)
 
-    class Meta:
-        ordering = ('name',)
-        verbose_name = 'Категория. model Category'
-        verbose_name_plural = 'Категории. model Category'
-
     def __str__(self):
-        return self.name[:20]
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)[:20]
-        super().save(*args, **kwargs)
+        return self.name[:15]
 
 
-class Genre(models.Model):
-    """Жанр произведения культуры.
-
-    Произведению может быть присвоен жанр (Genre) из списка предустановленных
-    (например, «Сказка», «Рок» или «Артхаус»). Новые жанры может создавать
-    только администратор.
-    """
-    name = models.CharField(
-        max_length=200,
-        unique=True
-    )
+class Genres(models.Model):
+    name = models.TextField()
     slug = models.SlugField(unique=True)
 
-    class Meta:
-        ordering = ('name',)
-        verbose_name = 'Жанр. model Genre'
-        verbose_name_plural = 'Жанры. model Genre'
-
     def __str__(self):
-        return self.name[:20]
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)[:20]
-        super().save(*args, **kwargs)
+        return self.name[:15]
 
 
-class Title(models.Model):
-    """Основной эл-т БД. Произведение культуры. Конкретный объект.
+def correctyear(data):
+    year = dt.date.today().year
+    if year < data:
+        raise ValidationError("Некорректная дата")
+    return data
 
-    Поля 'name', 'year', 'category', 'description' и 'rating'.
-    name - Авторское или исторически сложившееся название. Обязательное.
-    year - Год издания/публикации произведения. Обязательное.
-    category - ссылка на категорию. Обязательное. При удалении категории,
-    принимает дефоптное значение.
-    Значение по умолчанию - 'Null'.
-    description - Краткое представление произведения.
-    Администрирование и наполнение доступны администратору системы.
-    """
-    name = models.CharField(
-        max_length=300,
-        verbose_name='Название произведения.'
-    )
-    description = models.CharField(
-        max_length=300,
-        verbose_name='Краткое представление произведения.'
-    )
 
-    year = models.PositiveSmallIntegerField(
-        verbose_name='Год издания/публикации произведения.',
-        db_index=True
-    )
-    description = models.CharField(
-        max_length=300, blank=True, null=True,
-    )
+class Titles(models.Model):
+    name = models.TextField()
+    year = models.IntegerField(db_index=True, validators=[correctyear])
+    description = models.TextField()
     category = models.ForeignKey(
-        Category, on_delete=models.SET_NULL,
+        Categories,
         null=True,
-        related_name='titles',
-        verbose_name='Раздел портала.'
+        on_delete=models.SET_NULL,
+        related_name="title",
     )
     genre = models.ManyToManyField(
-        Genre,
-        related_name='genres',
-    )
-
-    class Meta:
-        ordering = ('category', 'name')
-        verbose_name = 'Произведение. model Title'
-        verbose_name_plural = 'Произведения. model Title'
+        Genres,
+        related_name="title")
 
     def __str__(self):
-        return f'{self.name[:20]}, {str(self.year)}, {self.category}'
+        return self.name[:15]
 
 
 class Review(models.Model):
