@@ -1,7 +1,39 @@
-from django.contrib.auth import get_user_model
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
-User = get_user_model()
+class User(AbstractUser):
+    USER_CHOISES = [
+        ("user", "user"),
+        ("moderator", "moderator"),
+        ("admin", "admin"),
+    ]
+    username = models.CharField(max_length=150, unique=True)
+    email = models.EmailField(max_length=254, unique=True)
+    first_name = models.CharField(max_length=150, blank=True, unique=False)
+    last_name = models.CharField(max_length=150, blank=True, unique=False)
+
+    bio = models.TextField(
+        'Биография',
+        blank=True,
+    )
+    role = models.CharField(
+        max_length=10,
+        choices=USER_CHOISES,
+        default="user")
+
+    confirmation_code = models.TextField(
+        'Код подтверждения',
+        null=True, blank=True,
+    )
+    exclude = ('confirmation_code',)
+
+    def save(self, *args, **kwargs):
+        # set the value of the read_only_field using the regular field
+        if self.role == 'admin':
+            self.is_staff = True
+
+        # call the save() method of the parent
+        super(User, self).save(*args, **kwargs)
 
 
 class Categories(models.Model):
