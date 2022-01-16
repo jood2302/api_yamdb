@@ -1,11 +1,11 @@
 from rest_framework import status, viewsets, permissions, filters, mixins
-from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_list_or_404, get_object_or_404
 from django.core.mail import send_mail
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-
+from django.db.models import Avg
 from reviews.models import Categories, Genres, Titles, Comment, Review, User
 from .secrets import generate_activation_key
 from .serializers import (CategoriesSerializer, GenresSerializer, TitlesSerializer,
@@ -14,7 +14,7 @@ from .serializers import (CategoriesSerializer, GenresSerializer, TitlesSerializ
 from .permissions import IsAdminOrReadOnly, IsUserOrAdminOrModerOrReadOnly
 
 
-class CreateListDestroy(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin,
+class CreateListDestroy(mixins.CreateModelMixin, mixins.ListModelMixin,
                         mixins.DestroyModelMixin, viewsets.GenericViewSet):
     pass
 
@@ -25,7 +25,7 @@ class CategoriesViewSet(CreateListDestroy):
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
-
+    lookup_field = 'slug'
 
 class GenresViewSet(CreateListDestroy):
     queryset = Genres.objects.all()
@@ -33,13 +33,14 @@ class GenresViewSet(CreateListDestroy):
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
-
+    lookup_field = 'slug'
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Titles.objects.all()
     serializer_class = TitlesSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('name', 'year', 'category', 'genre')
+    pagination_class = PageNumberPagination
 
     def get_category_genres(self, serializer):
         category_slug = serializer.initial_data.get('category')
