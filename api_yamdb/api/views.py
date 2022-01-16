@@ -1,19 +1,17 @@
-from rest_framework import status, viewsets, permissions
-from rest_framework import filters, mixins
-from reviews.models import Categories, Genres, Titles, Comment, Review, User
+from rest_framework import status, viewsets, permissions, filters, mixins
 from rest_framework.pagination import LimitOffsetPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_list_or_404, get_object_or_404
 from django.core.mail import send_mail
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from reviews.models import Categories, Genres, Titles, Comment, Review, User
 from .secrets import generate_activation_key
 from .serializers import (CategoriesSerializer, GenresSerializer, TitlesSerializer,
                           ReviewSerializer, CommentSerializer, UserSignUpSerializer,
                           UserAuthSerializer, UserSerializer, UserMeSerializer)
-from .permissions import IsAdminOrReadOnly
+from .permissions import IsAdminOrReadOnly, IsUserOrAdminOrModerOrReadOnly
 
 
 class CreateListDestroy(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin,
@@ -63,7 +61,7 @@ class TitlesViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
     serializer_class = ReviewSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsUserOrAdminOrModerOrReadOnly,)
 
     def get_queryset(self):
         title = get_object_or_404(Titles, pk=self.kwargs.get('title_id'))
@@ -91,7 +89,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
     serializer_class = CommentSerializer
-    permission_classes = (IsAuthenticated,)  # orReadOnly  если тесты будут падать
+    permission_classes = (IsUserOrAdminOrModerOrReadOnly,)
 
     def get_queryset(self):
         review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
@@ -153,22 +151,16 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAdminUser,)
     lookup_field = 'username'
 
-    def retrieve(self, request, *args, **kwargs):
-        # do your customization here
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
-
 
 @api_view(['GET', 'PATCH'])
-@permission_classes([IsAuthenticated])
+@permission_classes([permissions.IsAuthenticated])
 def UsersMe(request):
     user = User.objects.get(username=request.user)
     if request.method == 'GET':
-        serializer = UserMeSerializer(user, many=False)
+        serializer = UserSerializer(user, many=False)
         return Response(serializer.data, status=status.HTTP_200_OK)
     elif request.method == 'PATCH':
-        serializer = UserSerializer(user, data=request.data, many=False)
+        serializer = UserMeSerializer(user, data=request.data, many=False)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)

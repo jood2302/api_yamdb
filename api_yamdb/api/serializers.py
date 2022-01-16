@@ -84,6 +84,12 @@ class UserMeSerializer(UserSerializer):
     username = serializers.CharField(read_only=True)
     email = serializers.EmailField(read_only=True)
 
+    def validate(self, data):
+        instance = getattr(self, 'instance', None)
+        if instance.role != 'admin':
+            data['role'] = instance.role
+        return data
+
 
 class UserSignUpSerializer(UserSerializer):
     class Meta:
@@ -105,25 +111,16 @@ class UserAuthSerializer(serializers.ModelSerializer):
     username = serializers.CharField(validators=[username_exist])
     token = serializers.SerializerMethodField(read_only=True)
 
-    # todo( не работает через def validate_username)
-    # A user with that username already exists.
-
     class Meta:
         model = User
         fields = ['username', 'confirmation_code', 'token']
 
-    # def validate_username(self, value):
-    #     if not User.objects.filter(username=value).exists():
-    #         raise serializers.ValidationError({'username': 'A user with that username don\'t exists.'})
     def get_token(self, data):
         user = User.objects.get(username=data['username'])
         token = RefreshToken.for_user(user)
         return str(token.access_token)
 
     def validate(self, data):
-        # if not User.objects.filter(username=username).exists():
-        #     raise serializers.ValidationError('A user with that username don\'t exists.')
-
         code = User.objects.get(username=data['username']).confirmation_code
         code_from_user = data.get('confirmation_code')
         if code_from_user is None:
