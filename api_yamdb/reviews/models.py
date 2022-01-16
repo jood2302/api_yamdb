@@ -6,21 +6,31 @@ from django.core.exceptions import ValidationError
 
 
 class User(AbstractUser):
+    """Модель пользователей.
+    username - логин пользователя
+    email - электронная почта
+    first_name - имя
+    last_name - фамилия
+    bio - биография
+    role - роль
+    confirmation_code - код подтверждения
+    """
     USER_CHOISES = [
         ("user", "user"),
         ("moderator", "moderator"),
         ("admin", "admin"),
     ]
-    username = models.CharField(max_length=150, unique=True)
-    email = models.EmailField(max_length=254, unique=True)
-    first_name = models.CharField(max_length=150, blank=True, unique=False)
-    last_name = models.CharField(max_length=150, blank=True, unique=False)
+    username = models.CharField('Логин', max_length=150, unique=True)
+    email = models.EmailField('Почта', max_length=254, unique=True)
+    first_name = models.CharField('Имя', max_length=150, blank=True, unique=False)
+    last_name = models.CharField('Фамилия', max_length=150, blank=True, unique=False)
 
     bio = models.TextField(
         'Биография',
         blank=True,
     )
     role = models.CharField(
+        'Роль',
         max_length=10,
         choices=USER_CHOISES,
         default="user")
@@ -32,11 +42,14 @@ class User(AbstractUser):
     exclude = ('confirmation_code',)
 
     def save(self, *args, **kwargs):
-        # set the value of the read_only_field using the regular field
+        if self.is_superuser:
+            self.role = 'admin'
+
         if self.role == 'admin':
             self.is_staff = True
+        else:
+            self.is_staff = False
 
-        # call the save() method of the parent
         super(User, self).save(*args, **kwargs)
 
 
