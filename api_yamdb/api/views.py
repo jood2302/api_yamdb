@@ -8,7 +8,6 @@ from django.core.mail import send_mail
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet
 
 from .secrets import generate_activation_key
 from .serializers import (CategoriesSerializer, GenresSerializer, TitlesSerializer,
@@ -17,7 +16,7 @@ from .serializers import (CategoriesSerializer, GenresSerializer, TitlesSerializ
 from .permissions import IsAdminOrReadOnly
 
 
-class CreateListDestroy(mixins.CreateModelMixin, mixins.ListModelMixin,
+class CreateListDestroy(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin,
                         mixins.DestroyModelMixin, viewsets.GenericViewSet):
     pass
 
@@ -36,7 +35,6 @@ class GenresViewSet(CreateListDestroy):
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
-
 
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Titles.objects.all()
