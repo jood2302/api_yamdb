@@ -158,10 +158,10 @@ class UserViewSet(viewsets.ModelViewSet):
 def UsersMe(request):
     user = User.objects.get(username=request.user)
     if request.method == 'GET':
-        serializer = UserMeSerializer(user, many=False)
+        serializer = UserSerializer(user, many=False)
         return Response(serializer.data, status=status.HTTP_200_OK)
     elif request.method == 'PATCH':
-        serializer = UserSerializer(user, data=request.data, many=False)
+        serializer = UserMeSerializer(user, data=request.data, many=False)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
