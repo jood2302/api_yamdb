@@ -5,14 +5,15 @@ from django.shortcuts import get_list_or_404, get_object_or_404
 from django.core.mail import send_mail
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from django.db.models import Avg
+
 from reviews.models import Categories, Genres, Titles, Comment, Review, User
 from .secrets import generate_activation_key
 from .serializers import (CategoriesSerializer, GenresSerializer, TitlesSerializer,
                           ReviewSerializer, CommentSerializer, UserSignUpSerializer,
                           UserAuthSerializer, UserSerializer, UserMeSerializer)
 from .permissions import IsAdminOrReadOnly, IsUserOrAdminOrModerOrReadOnly
-from .filter import TitleFilter
+from .filters import TitleFilter
+
 
 class CreateListDestroy(mixins.CreateModelMixin, mixins.ListModelMixin,
                         mixins.DestroyModelMixin, viewsets.GenericViewSet):
@@ -27,6 +28,7 @@ class CategoriesViewSet(CreateListDestroy):
     search_fields = ('name',)
     lookup_field = 'slug'
 
+
 class GenresViewSet(CreateListDestroy):
     queryset = Genres.objects.all()
     serializer_class = GenresSerializer
@@ -34,6 +36,8 @@ class GenresViewSet(CreateListDestroy):
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
+
+
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Titles.objects.all()
     serializer_class = TitlesSerializer

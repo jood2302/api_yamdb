@@ -1,9 +1,8 @@
 from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-import datetime as dt
 from django.core.exceptions import ValidationError
-
+import datetime as dt
 
 class User(AbstractUser):
     """Модель пользователей.
