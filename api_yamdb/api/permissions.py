@@ -22,3 +22,7 @@ class IsUserOrAdminOrModerOrReadOnly(permissions.BasePermission):
         if request.user.is_authenticated:
             return (obj.author == request.user
                     or request.user.role in ('admin', 'moderator'))
+<<<<<<< HEAD
+=======
+        return False
+>>>>>>> 5fffeae57350e825bf7eb8fedc0a1788965eb1a8
