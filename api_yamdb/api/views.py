@@ -1,5 +1,5 @@
 from rest_framework import status, viewsets, permissions, filters, mixins
-from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_list_or_404, get_object_or_404
 from django.core.mail import send_mail
@@ -12,6 +12,7 @@ from .serializers import (CategoriesSerializer, GenresSerializer, TitlesSerializ
                           ReviewSerializer, CommentSerializer, UserSignUpSerializer,
                           UserAuthSerializer, UserSerializer, UserMeSerializer)
 from .permissions import IsAdminOrReadOnly, IsUserOrAdminOrModerOrReadOnly
+from .filters import TitleFilter
 
 
 class CreateListDestroy(mixins.CreateModelMixin, mixins.ListModelMixin,
@@ -25,6 +26,7 @@ class CategoriesViewSet(CreateListDestroy):
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
+    lookup_field = 'slug'
 
 
 class GenresViewSet(CreateListDestroy):
@@ -33,6 +35,7 @@ class GenresViewSet(CreateListDestroy):
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
+    lookup_field = 'slug'
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
@@ -40,8 +43,9 @@ class TitlesViewSet(viewsets.ModelViewSet):
     serializer_class = TitlesSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('name', 'year', 'category', 'genre')
-
+    filterset_class = TitleFilter
+    pagination_class = PageNumberPagination
+  
     def get_category_genres(self, serializer):
         category_slug = serializer.initial_data.get('category')
         category = get_object_or_404(Categories, slug=category_slug)

@@ -1,9 +1,8 @@
 from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-import datetime as dt
 from django.core.exceptions import ValidationError
-
+import datetime as dt
 
 class User(AbstractUser):
     """Модель пользователей.
@@ -55,15 +54,15 @@ class User(AbstractUser):
 
 class Categories(models.Model):
     name = models.CharField(max_length=256)
-    slug = models.SlugField(unique=True)
+    slug = models.SlugField('Slug', max_length=50, unique=True)
 
     def __str__(self):
         return self.name[:15]
 
 
 class Genres(models.Model):
-    name = models.TextField()
-    slug = models.SlugField(unique=True)
+    name = models.CharField(max_length=256)
+    slug = models.SlugField('Slug', max_length=50, unique=True)
 
     def __str__(self):
         return self.name[:15]
