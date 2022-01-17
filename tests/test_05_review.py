@@ -52,14 +52,14 @@ class Test05ReviewAPI:
             f'статус {code}'
         )
         try:
-            from reviews.models import Review, Titles
+            from reviews.models import Review, Title
         except Exception as e:
             assert False, (
                 'Не удалось импортировать модели из приложения reviews. '
                 f'Ошибка: {e}'
             )
         from django.db.utils import IntegrityError
-        title = Titles.objects.get(pk=titles[0]["id"])
+        title = Title.objects.get(pk=titles[0]["id"])
         review = None
         try:
             review = Review.objects.create(

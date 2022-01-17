@@ -1,8 +1,10 @@
-from django.utils import timezone
-from django.db import models
+import datetime as dt
+
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
-import datetime as dt
+from django.db import models
+from django.utils import timezone
+
 
 class User(AbstractUser):
     """Модель пользователей.
@@ -14,37 +16,47 @@ class User(AbstractUser):
     role - роль
     confirmation_code - код подтверждения
     """
+
     USER_CHOISES = [
         ("user", "user"),
         ("moderator", "moderator"),
-        ("admin", "admin"),
+        ("admin", "admin")
     ]
-    username = models.CharField('Логин', max_length=150, unique=True)
-    email = models.EmailField('Почта', max_length=254, unique=True)
-    first_name = models.CharField('Имя', max_length=150, blank=True, unique=False)
-    last_name = models.CharField('Фамилия', max_length=150, blank=True, unique=False)
-
-    bio = models.TextField(
-        'Биография',
+    username = models.CharField("Логин", max_length=150, unique=True)
+    email = models.EmailField("Почта", max_length=254, unique=True)
+    first_name = models.CharField(
+        "Имя",
+        max_length=150,
         blank=True,
+        unique=False
     )
+    last_name = models.CharField(
+        "Фамилия",
+        max_length=150,
+        blank=True,
+        unique=False
+    )
+
+    bio = models.TextField("Биография", blank=True)
     role = models.CharField(
-        'Роль',
+        "Роль",
         max_length=10,
         choices=USER_CHOISES,
-        default="user")
+        default="user"
+    )
 
     confirmation_code = models.TextField(
-        'Код подтверждения',
-        null=True, blank=True,
+        "Код подтверждения",
+        null=True,
+        blank=True
     )
-    exclude = ('confirmation_code',)
+    exclude = ("confirmation_code",)
 
     def save(self, *args, **kwargs):
         if self.is_superuser:
-            self.role = 'admin'
+            self.role = "admin"
 
-        if self.role == 'admin':
+        if self.role == "admin":
             self.is_staff = True
         else:
             self.is_staff = False
@@ -54,7 +66,7 @@ class User(AbstractUser):
 
 class Categories(models.Model):
     name = models.CharField(max_length=256)
-    slug = models.SlugField('Slug', max_length=50, unique=True)
+    slug = models.SlugField("Slug", max_length=50, unique=True)
 
     def __str__(self):
         return self.name[:15]
@@ -62,7 +74,7 @@ class Categories(models.Model):
 
 class Genres(models.Model):
     name = models.CharField(max_length=256)
-    slug = models.SlugField('Slug', max_length=50, unique=True)
+    slug = models.SlugField("Slug", max_length=50, unique=True)
 
     def __str__(self):
         return self.name[:15]
@@ -75,19 +87,14 @@ def correctyear(data):
     return data
 
 
-class Titles(models.Model):
+class Title(models.Model):
     name = models.TextField()
     year = models.IntegerField(db_index=True, validators=[correctyear])
     description = models.TextField()
     category = models.ForeignKey(
-        Categories,
-        null=True,
-        on_delete=models.SET_NULL,
-        related_name="title",
+        Categories, null=True, on_delete=models.SET_NULL, related_name="title"
     )
-    genre = models.ManyToManyField(
-        Genres,
-        related_name="title")
+    genre = models.ManyToManyField(Genres, related_name="title")
 
     def __str__(self):
         return self.name[:15]
@@ -107,55 +114,51 @@ class Review(models.Model):
     Модератор может менять текст и оценку или удалять полностью объект.
     Администратор - как модератор.
     """
+
     SCORE_CHOICES = (
-        (1, '1. Очень плохо. Не понравилось совсем.'),
-        (2, '2. Плохо. Не понравилось почти всё.'),
-        (3, '3. Не очень. Не понравилось многое.'),
-        (4, '4. Так себе. Мало что понравилось.'),
-        (5, '5. Ни то, ни сё. Почти ничего не понравилось.'),
-        (6, '6. Неплохо. Кое-что понравилось.'),
-        (7, '7. Хорошо. Многое понравилось.'),
-        (8, '8. Очень хорошо. Почти всё понравилось.'),
-        (9, '9. Великолепно. Очень понравилось.'),
-        (10, '10. Высший балл. В восторге.'),
+        (1, "1. Очень плохо. Не понравилось совсем."),
+        (2, "2. Плохо. Не понравилось почти всё."),
+        (3, "3. Не очень. Не понравилось многое."),
+        (4, "4. Так себе. Мало что понравилось."),
+        (5, "5. Ни то, ни сё. Почти ничего не понравилось."),
+        (6, "6. Неплохо. Кое-что понравилось."),
+        (7, "7. Хорошо. Многое понравилось."),
+        (8, "8. Очень хорошо. Почти всё понравилось."),
+        (9, "9. Великолепно. Очень понравилось."),
+        (10, "10. Высший балл. В восторге."),
     )
     title = models.ForeignKey(
-        Titles, on_delete=models.CASCADE,
-        related_name='reviews',
-        verbose_name='Рецензируемое произведение'
+        Title,
+        on_delete=models.CASCADE,
+        related_name="reviews",
+        verbose_name="Рецензируемое произведение",
     )
-    text = models.TextField(
-        max_length=5000,
-        verbose_name='Текст отзыва'
-    )
+    text = models.TextField(max_length=5000, verbose_name="Текст отзыва")
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE,
-        related_name='reviews',
-        verbose_name='Автор отзыва'
+        User,
+        on_delete=models.CASCADE,
+        related_name="reviews",
+        verbose_name="Автор отзыва",
     )
     score = models.SmallIntegerField(
-        choices=SCORE_CHOICES,
-        verbose_name='Оценка произведения пользователем'
+        choices=SCORE_CHOICES, verbose_name="Оценка произведения пользователем"
     )
     pub_date = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата создания отзыва'
+        auto_now_add=True, verbose_name="Дата создания отзыва"
     )
 
     class Meta:
         constraints = (
             models.UniqueConstraint(
-                fields=['title', 'author'], name='title_one_review'
+                fields=["title", "author"], name="title_one_review"
             ),
         )
-        ordering = ('title',)
-        verbose_name = 'Отзыв. model Review'
-        verbose_name_plural = 'Отзывы. model Review'
+        ordering = ("title",)
+        verbose_name = "Отзыв. model Review"
+        verbose_name_plural = "Отзывы. model Review"
 
     def __str__(self):
-        return (
-            f'{self.author.username[:15]}, {self.text[:30]}, {self.score}'
-        )
+        return f"{self.author.username[:15]}, {self.text[:30]}, {self.score}"
 
     def __iter__(self):
         for field_name in self._meta.get_fields():
@@ -175,32 +178,31 @@ class Comment(models.Model):
     Модератор может менять текст или удалять полностью объект.
     Администратор - как модератор.
     """
+
     review = models.ForeignKey(
-        Review, on_delete=models.CASCADE,
-        related_name='comments',
-        verbose_name='Комментируемый отзыв'
+        Review,
+        on_delete=models.CASCADE,
+        related_name="comments",
+        verbose_name="Комментируемый отзыв",
     )
-    text = models.TextField(
-        max_length=2000,
-        verbose_name='Текст комментария'
-    )
+    text = models.TextField(max_length=2000, verbose_name="Текст комментария")
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE,
-        related_name='comments',
-        verbose_name='Автор комментария'
+        User,
+        on_delete=models.CASCADE,
+        related_name="comments",
+        verbose_name="Автор комментария",
     )
     pub_date = models.DateTimeField(
-        default=timezone.now,
-        verbose_name='Дата создания комментария'
+        default=timezone.now, verbose_name="Дата создания комментария"
     )
 
     class Meta:
-        ordering = ('review', 'author')
-        verbose_name = 'Комментарий. model Comment'
-        verbose_name_plural = 'Комментарии. model Comment'
+        ordering = ("review", "author")
+        verbose_name = "Комментарий. model Comment"
+        verbose_name_plural = "Комментарии. model Comment"
 
     def __str__(self):
-        return f'{self.author.username[:15]}, {self.text[:30]}'
+        return f"{self.author.username[:15]}, {self.text[:30]}"
 
     def __iter__(self):
         for field_name in self._meta.get_fields():

@@ -5,19 +5,17 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('reviews', '0003_merge_20220116_1244'),
-    ]
+    dependencies = [("reviews", "0003_merge_20220116_1244")]
 
     operations = [
         migrations.AlterField(
-            model_name='categories',
-            name='slug',
-            field=models.SlugField(unique=True, verbose_name='Slug'),
+            model_name="categories",
+            name="slug",
+            field=models.SlugField(unique=True, verbose_name="Slug"),
         ),
         migrations.AlterField(
-            model_name='genres',
-            name='slug',
-            field=models.SlugField(unique=True, verbose_name='Slug'),
+            model_name="genres",
+            name="slug",
+            field=models.SlugField(unique=True, verbose_name="Slug"),
         ),
     ]

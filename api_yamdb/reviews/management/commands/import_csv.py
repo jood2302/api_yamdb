@@ -14,28 +14,26 @@ class Command(BaseCommand):
     как есть объекты, куда им ссылаться.
     # TODO очень много всего.
     """
-    help = (
-        'Импорт .csv файла(ов) в БД.\n'
-        'Использование: -p | --path <путь>'
-    )
+
+    help = "Импорт .csv файла(ов) в БД.\n" "Использование: -p | --path <путь>"
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '-p',
-            '--path',
-            action='store',
+            "-p",
+            "--path",
+            action="store",
             default=False,
-            help='относительный путь к csv'
+            help="относительный путь к csv",
         )
 
     def handle(self, *args, **options):
         # берём аргументы
         path = None
-        if options['path']:
-            path = options['path']
-            self.stdout.write(f'Указан путь до csv: {path}')
+        if options["path"]:
+            path = options["path"]
+            self.stdout.write(f"Указан путь до csv: {path}")
         else:
-            self.stdout.write('Путь до csv не задан')
+            self.stdout.write("Путь до csv не задан")
 
         # делаем работу
         import_from_csv(path)

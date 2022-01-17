@@ -1,17 +1,18 @@
 from django.contrib import admin
-
-from import_export.admin import ImportExportActionModelAdmin
 from import_export import resources
-from .models import Categories, Genres, Titles, Review, Comment, User
+from import_export.admin import ImportExportActionModelAdmin
+
+from .models import Categories, Comment, Genres, Review, Title, User
 
 
 class CategoriesResources(resources.ModelResource):
     class Meta:
         model = Categories
-        fields = ('id', 'name', 'slug',)
+        fields = ("id", "name", "slug")
+
 
 class CategoriesAdmin(ImportExportActionModelAdmin):
-    list_display = ('name', 'slug')
+    list_display = ("name", "slug")
     resources_class = CategoriesResources
 
 
@@ -21,13 +22,13 @@ class GenresResources(resources.ModelResource):
 
 
 class GenresAdmin(ImportExportActionModelAdmin):
-    list_display = ('name', 'slug')
+    list_display = ("name", "slug")
     resources_class = GenresResources
 
 
 class TitlesResources(resources.ModelResource):
     class Meta:
-        model = Titles
+        model = Title
 
 
 class TitlesAdmin(ImportExportActionModelAdmin):
@@ -40,7 +41,7 @@ class CommentResources(resources.ModelResource):
 
 
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'review', 'text', 'pub_date')
+    list_display = ("id", "review", "text", "pub_date")
     resources_class = CommentResources
 
 
@@ -48,15 +49,15 @@ class ReviewResources(resources.ModelResource):
     class Meta:
         model = Review
 
+
 class ReviewAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'text', 'author', 'score', 'pub_date')
+    list_display = ("id", "title", "text", "author", "score", "pub_date")
     resources_class = ReviewResources
 
 
 admin.site.register(User)
 admin.site.register(Categories, CategoriesAdmin)
 admin.site.register(Genres, CategoriesAdmin)
-admin.site.register(Titles, TitlesAdmin)
+admin.site.register(Title, TitlesAdmin)
 admin.site.register(Comment, CommentAdmin)
 admin.site.register(Review, ReviewAdmin)
-
