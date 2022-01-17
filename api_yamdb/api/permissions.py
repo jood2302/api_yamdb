@@ -1,4 +1,6 @@
 from rest_framework import permissions
+
+
 class IsAdminOrReadOnly(permissions.BasePermission):
     """Доступ на чтение для всех.
     На изменение -  для админа."""
@@ -14,6 +16,7 @@ class IsAdminOrReadOnly(permissions.BasePermission):
 class IsUserOrAdminOrModerOrReadOnly(permissions.BasePermission):
     """Доступ на чтение для всех.
     На изменение -  для автора, либо админа и модератора"""
+
     def has_permission(self, request, view):
         return (request.method in permissions.SAFE_METHODS
                 or request.user.is_authenticated)
@@ -22,7 +25,3 @@ class IsUserOrAdminOrModerOrReadOnly(permissions.BasePermission):
         if request.user.is_authenticated:
             return (obj.author == request.user
                     or request.user.role in ('admin', 'moderator'))
-<<<<<<< HEAD
-=======
-        return False
->>>>>>> 5fffeae57350e825bf7eb8fedc0a1788965eb1a8
