@@ -12,7 +12,7 @@ from .serializers import (CategoriesSerializer, GenresSerializer, TitlesSerializ
                           ReviewSerializer, CommentSerializer, UserSignUpSerializer,
                           UserAuthSerializer, UserSerializer, UserMeSerializer)
 from .permissions import IsAdminOrReadOnly, IsUserOrAdminOrModerOrReadOnly
-
+from .filter import TitleFilter
 
 class CreateListDestroy(mixins.CreateModelMixin, mixins.ListModelMixin,
                         mixins.DestroyModelMixin, viewsets.GenericViewSet):
@@ -39,9 +39,9 @@ class TitlesViewSet(viewsets.ModelViewSet):
     serializer_class = TitlesSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('name', 'year', 'category', 'genre')
+    filterset_class = TitleFilter
     pagination_class = PageNumberPagination
-
+  
     def get_category_genres(self, serializer):
         category_slug = serializer.initial_data.get('category')
         category = get_object_or_404(Categories, slug=category_slug)
