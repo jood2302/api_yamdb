@@ -2,6 +2,7 @@ import datetime as dt
 
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils import timezone
 
@@ -101,32 +102,6 @@ class Title(models.Model):
 
 
 class Review(models.Model):
-    """Отзывы пользователей. Контент пользователей.
-
-    Поля 'title', 'text', 'author', 'score', 'pub_date'
-    title - ссылка на произведение(model Title)
-    text - текст отзыва
-    author - ссылка на пользователя(model User)
-    score - оценка пользователя(от 1 до 10 по заданию)
-    pub_date - дата публикации(редактирования) отзыва
-    Пользователь может оставить лишь один отзыв на произведение.
-    Пользователь может менять текст и оценку или удалять полностью отзыв.
-    Модератор может менять текст и оценку или удалять полностью объект.
-    Администратор - как модератор.
-    """
-
-    SCORE_CHOICES = (
-        (1, "1. Очень плохо. Не понравилось совсем."),
-        (2, "2. Плохо. Не понравилось почти всё."),
-        (3, "3. Не очень. Не понравилось многое."),
-        (4, "4. Так себе. Мало что понравилось."),
-        (5, "5. Ни то, ни сё. Почти ничего не понравилось."),
-        (6, "6. Неплохо. Кое-что понравилось."),
-        (7, "7. Хорошо. Многое понравилось."),
-        (8, "8. Очень хорошо. Почти всё понравилось."),
-        (9, "9. Великолепно. Очень понравилось."),
-        (10, "10. Высший балл. В восторге."),
-    )
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
@@ -140,8 +115,9 @@ class Review(models.Model):
         related_name="reviews",
         verbose_name="Автор отзыва",
     )
-    score = models.SmallIntegerField(
-        choices=SCORE_CHOICES, verbose_name="Оценка произведения пользователем"
+    score = models.SmallIntegerField(validators=[MinValueValidator(1),
+                                     MaxValueValidator(10)], 
+                                     verbose_name="Оценка произведения пользователем"
     )
     pub_date = models.DateTimeField(
         auto_now_add=True, verbose_name="Дата создания отзыва"
@@ -197,7 +173,7 @@ class Comment(models.Model):
     )
 
     class Meta:
-        ordering = ("review", "author")
+        ordering = ("review", "author", "-pub_date",)
         verbose_name = "Комментарий. model Comment"
         verbose_name_plural = "Комментарии. model Comment"
 
