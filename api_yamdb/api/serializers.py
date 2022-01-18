@@ -5,7 +5,6 @@ from rest_framework.exceptions import ParseError
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from reviews.models import Categories, Comment, Genres, Review, Title, User
-
 from .validators import username_exist
 
 

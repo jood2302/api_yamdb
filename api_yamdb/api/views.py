@@ -8,7 +8,6 @@ from rest_framework.pagination import (LimitOffsetPagination,
 from rest_framework.response import Response
 
 from reviews.models import Categories, Comment, Genres, Review, Title, User
-
 from .filters import TitleFilter
 from .permissions import IsAdminOrReadOnly, IsUserOrAdminOrModerOrReadOnly
 from .secrets import generate_activation_key
@@ -95,7 +94,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         title = get_object_or_404(Title, pk=self.kwargs.get("title_id"))
         review_id = self.kwargs.get("pk")
-        author = Review.objects.get(pk=review_id).author
+        author = get_object_or_404(Review.objects, pk=review_id).author
         serializer.save(author=author, title_id=title.id)
 
 
@@ -116,7 +115,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         review = get_object_or_404(Review, pk=self.kwargs.get("review_id"))
         comment_id = self.kwargs.get("pk")
-        author = Comment.objects.get(pk=comment_id).author
+        author = get_object_or_404(Comment.objects, pk=comment_id).author
         serializer.save(author=author, review_id=review.id)
 
 
