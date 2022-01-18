@@ -203,8 +203,3 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"{self.author.username[:15]}, {self.text[:30]}"
-
-    def __iter__(self):
-        for field_name in self._meta.get_fields():
-            value = getattr(self, field_name, None)
-            yield (field_name, value)
