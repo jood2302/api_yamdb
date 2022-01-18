@@ -143,18 +143,6 @@ class Review(models.Model):
 
 
 class Comment(models.Model):
-    """Комментарии пользователей на отзывы. Контент пользователей.
-
-    Поля 'review', 'text', 'author', 'pub_date'
-    review - ссылка на отзыв(model Review).
-    text - текст комментария.
-    author - ссылка на автора коммента(model User)
-    pub_date - дата создания
-    Пользователь может менять текст или удалять полностью коммент.
-    Модератор может менять текст или удалять полностью объект.
-    Администратор - как модератор.
-    """
-
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
