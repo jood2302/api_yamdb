@@ -2,12 +2,12 @@ from django.contrib import admin
 from import_export import resources
 from import_export.admin import ImportExportActionModelAdmin
 
-from .models import Categories, Comment, Genres, Review, Title, User
+from .models import Category, Comment, Genre, Review, Title, User
 
 
 class CategoriesResources(resources.ModelResource):
     class Meta:
-        model = Categories
+        model = Category
         fields = ("id", "name", "slug")
 
 
@@ -18,7 +18,7 @@ class CategoriesAdmin(ImportExportActionModelAdmin):
 
 class GenresResources(resources.ModelResource):
     class Meta:
-        model = Genres
+        model = Genre
 
 
 class GenresAdmin(ImportExportActionModelAdmin):
@@ -56,8 +56,8 @@ class ReviewAdmin(admin.ModelAdmin):
 
 
 admin.site.register(User)
-admin.site.register(Categories, CategoriesAdmin)
-admin.site.register(Genres, CategoriesAdmin)
+admin.site.register(Category, CategoriesAdmin)
+admin.site.register(Genre, CategoriesAdmin)
 admin.site.register(Title, TitlesAdmin)
 admin.site.register(Comment, CommentAdmin)
 admin.site.register(Review, ReviewAdmin)
