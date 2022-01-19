@@ -5,6 +5,7 @@ from rest_framework.exceptions import ParseError
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from reviews.models import Categories, Comment, Genres, Review, Title, User
+from reviews.utils import ADMIN, ME
 from .validators import username_exist
 
 
@@ -87,7 +88,7 @@ class UserMeSerializer(UserSerializer):
 
     def validate(self, data):
         instance = getattr(self, "instance", None)
-        if instance.role != "admin":
+        if instance.role != ADMIN:
             data["role"] = instance.role
         return data
 
@@ -103,7 +104,7 @@ class UserSignUpSerializer(UserSerializer):
         return value
 
     def validate_username(self, value):
-        if value == "me":
+        if value == ME:
             raise serializers.ValidationError(
                 "A user with that username already exists."
             )

@@ -1,3 +1,5 @@
+import uuid
+
 from django.core.mail import send_mail
 from django.shortcuts import get_list_or_404, get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -7,10 +9,10 @@ from rest_framework.pagination import (LimitOffsetPagination,
                                        PageNumberPagination)
 from rest_framework.response import Response
 
+from api_yamdb.settings import EMAIL_AUTH
 from reviews.models import Categories, Comment, Genres, Review, Title, User
 from .filters import TitleFilter
 from .permissions import IsAdminOrReadOnly, IsUserOrAdminOrModerOrReadOnly
-from .secrets import generate_activation_key
 from .serializers import (
     CategoriesSerializer,
     CommentSerializer,
@@ -120,29 +122,28 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 
 @api_view(["POST"])
-def signupUser(request):
+def signup_user(request):
     serializer = UserSignUpSerializer(data=request.data, many=False)
-    if serializer.is_valid():
-        confirmation_code = generate_activation_key(request.data["username"])
-        serializer.save(confirmation_code=confirmation_code)
+    serializer.is_valid(raise_exception=True)
+    confirmation_code = uuid.uuid4()
+    serializer.save(confirmation_code=confirmation_code)
 
-        email = request.data["email"]
-        send_mail(
-            "API_YAMDB: Confirmation code",
-            f"confirmation_code: {confirmation_code}",
-            "from@example.com",
-            [email],
-            fail_silently=False,
-        )
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    email = serializer.validated_data["email"]
+    send_mail(
+        "API_YAMDB: Confirmation code",
+        f"confirmation_code: {confirmation_code}",
+        EMAIL_AUTH,
+        [email],
+        fail_silently=False,
+    )
+    return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
 
 @api_view(["POST"])
-def getAuthToken(request):
+def get_auth_token(request):
     serializer = UserAuthSerializer(data=request.data, many=False)
     if serializer.is_valid():
-        token = serializer.data["token"]
+        token = serializer.validated_data["token"]
         return Response({"token": token}, status=status.HTTP_200_OK)
 
     username_err = serializer.errors.get("username")
@@ -163,15 +164,13 @@ class UserViewSet(viewsets.ModelViewSet):
 
 @api_view(["GET", "PATCH"])
 @permission_classes([permissions.IsAuthenticated])
-def UsersMe(request):
-    user = User.objects.get(username=request.user)
+def users_me(request):
+    user = request.user
     if request.method == "GET":
         serializer = UserSerializer(user, many=False)
         return Response(serializer.data, status=status.HTTP_200_OK)
     elif request.method == "PATCH":
         serializer = UserMeSerializer(user, data=request.data, many=False)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)

@@ -6,6 +6,8 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils import timezone
 
+from reviews.utils import USER, MODER, ADMIN
+
 
 class User(AbstractUser):
     """Модель пользователей.
@@ -19,9 +21,9 @@ class User(AbstractUser):
     """
 
     USER_CHOISES = [
-        ("user", "user"),
-        ("moderator", "moderator"),
-        ("admin", "admin")
+        (USER, USER),
+        (MODER, MODER),
+        (ADMIN, ADMIN)
     ]
     username = models.CharField("Логин", max_length=150, unique=True)
     email = models.EmailField("Почта", max_length=254, unique=True)
@@ -55,9 +57,9 @@ class User(AbstractUser):
 
     def save(self, *args, **kwargs):
         if self.is_superuser:
-            self.role = "admin"
+            self.role = ADMIN
 
-        if self.role == "admin":
+        if self.role == ADMIN:
             self.is_staff = True
         else:
             self.is_staff = False
