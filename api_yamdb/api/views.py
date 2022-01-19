@@ -60,6 +60,7 @@ class TitlesViewSet(viewsets.ModelViewSet):
             return TitlesWriteSerializer
         return TitlesReadSerializer
 
+
 class ReviewViewSet(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
     serializer_class = ReviewSerializer

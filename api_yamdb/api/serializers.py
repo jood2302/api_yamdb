@@ -18,6 +18,7 @@ class GenresSerializer(serializers.ModelSerializer):
         model = Genre
         exclude = ['id']
 
+
 class TitlesReadSerializer(serializers.ModelSerializer):
     genre = GenresSerializer(read_only=True, many=True)
     category = CategoriesSerializer(read_only=True)
