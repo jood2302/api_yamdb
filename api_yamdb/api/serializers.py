@@ -1,40 +1,40 @@
-from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.exceptions import ParseError
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from reviews.models import Categories, Comment, Genres, Review, Title, User
+from reviews.models import Category, Comment, Genre, Review, Title, User
 from .validators import username_exist
 
 
 class CategoriesSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Categories
-        fields = ("name", "slug")
+        model = Category
+        exclude = ['id']
 
 
 class GenresSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Genres
-        fields = ("name", "slug")
+        model = Genre
+        exclude = ['id']
 
-
-class TitlesSerializer(serializers.ModelSerializer):
+class TitlesReadSerializer(serializers.ModelSerializer):
     genre = GenresSerializer(read_only=True, many=True)
     category = CategoriesSerializer(read_only=True)
-    rating = serializers.SerializerMethodField(default=None, read_only=True)
-
-    def get_rating(self, title):
-        return (
-            Review.objects.filter(title=title.id)
-            .aggregate(Avg("score"))
-            .get("score__avg")
-        )
+    rating = serializers.IntegerField(read_only=True, required=False)
 
     class Meta:
-        model = Title
         fields = "__all__"
+        model = Title
+
+
+class TitlesWriteSerializer(TitlesReadSerializer):
+    genre = serializers.SlugRelatedField(
+        queryset=Genre.objects.all(), slug_field="slug", many=True
+    )
+    category = serializers.SlugRelatedField(
+        queryset=Category.objects.all(), slug_field="slug"
+    )
 
 
 class ReviewSerializer(serializers.ModelSerializer):

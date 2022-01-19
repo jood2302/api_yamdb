@@ -1,7 +1,6 @@
-import datetime as dt
 
 from django.contrib.auth.models import AbstractUser
-from django.core.exceptions import ValidationError
+from reviews.validators import correct_year
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils import timezone
@@ -68,37 +67,38 @@ class User(AbstractUser):
         super(User, self).save(*args, **kwargs)
 
 
-class Categories(models.Model):
+class Category(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField("Slug", max_length=50, unique=True)
+
+    class Meta:
+        verbose_name = "Категория"
+        verbose_name_plural = "Категории"
 
     def __str__(self):
         return self.name[:15]
 
 
-class Genres(models.Model):
+class Genre(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField("Slug", max_length=50, unique=True)
 
+    class Meta:
+        verbose_name = "Жанр"
+        verbose_name_plural = "Жанры"
+
     def __str__(self):
         return self.name[:15]
-
-
-def correctyear(data):
-    year = dt.date.today().year
-    if year < data:
-        raise ValidationError("Некорректная дата")
-    return data
 
 
 class Title(models.Model):
     name = models.TextField()
-    year = models.IntegerField(db_index=True, validators=[correctyear])
+    year = models.IntegerField(db_index=True, validators=[correct_year])
     description = models.TextField()
     category = models.ForeignKey(
-        Categories, null=True, on_delete=models.SET_NULL, related_name="title"
+        Category, null=True, on_delete=models.SET_NULL, related_name="titles"
     )
-    genre = models.ManyToManyField(Genres, related_name="title")
+    genre = models.ManyToManyField(Genre, related_name="titles")
 
     def __str__(self):
         return self.name[:15]
@@ -118,9 +118,9 @@ class Review(models.Model):
         related_name="reviews",
         verbose_name="Автор отзыва",
     )
-    score = models.SmallIntegerField(validators=[MinValueValidator(1),
-                                     MaxValueValidator(10)], 
-                                     verbose_name="Оценка произведения пользователем"
+    score = models.SmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        verbose_name="Оценка произведения пользователем"
     )
     pub_date = models.DateTimeField(
         auto_now_add=True, verbose_name="Дата создания отзыва"

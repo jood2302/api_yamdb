@@ -1,16 +1,18 @@
 import uuid
 
 from django.core.mail import send_mail
-from django.shortcuts import get_list_or_404, get_object_or_404
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, mixins, permissions, status, viewsets
+from django.db.models import Avg
+from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import (LimitOffsetPagination,
                                        PageNumberPagination)
 from rest_framework.response import Response
-
 from api_yamdb.settings import EMAIL_AUTH
-from reviews.models import Categories, Comment, Genres, Review, Title, User
+from .mixins import CreateListDestroy
+from reviews.models import Category, Comment, Genre, Review, Title, User
+
 from .filters import TitleFilter
 from .permissions import IsAdminOrReadOnly, IsUserOrAdminOrModerOrReadOnly
 from .serializers import (
@@ -18,7 +20,8 @@ from .serializers import (
     CommentSerializer,
     GenresSerializer,
     ReviewSerializer,
-    TitlesSerializer,
+    TitlesReadSerializer,
+    TitlesWriteSerializer,
     UserAuthSerializer,
     UserMeSerializer,
     UserSerializer,
@@ -26,17 +29,8 @@ from .serializers import (
 )
 
 
-class CreateListDestroy(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    mixins.DestroyModelMixin,
-    viewsets.GenericViewSet,
-):
-    pass
-
-
 class CategoriesViewSet(CreateListDestroy):
-    queryset = Categories.objects.all()
+    queryset = Category.objects.all()
     serializer_class = CategoriesSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
@@ -45,7 +39,7 @@ class CategoriesViewSet(CreateListDestroy):
 
 
 class GenresViewSet(CreateListDestroy):
-    queryset = Genres.objects.all()
+    queryset = Genre.objects.all()
     serializer_class = GenresSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
@@ -54,29 +48,17 @@ class GenresViewSet(CreateListDestroy):
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
-    serializer_class = TitlesSerializer
+    queryset = Title.objects.all().annotate(
+        rating=Avg('reviews__score'))
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
     pagination_class = PageNumberPagination
 
-    def get_category_genres(self, serializer):
-        category_slug = serializer.initial_data.get("category")
-        category = get_object_or_404(Categories, slug=category_slug)
-        genre_slugs = serializer.initial_data.getlist("genre")
-        if genre_slugs:
-            genres = get_list_or_404(Genres, slug__in=genre_slugs)
-            serializer.save(category=category, genre=genres)
-        else:
-            serializer.save(category=category)
-
-    def perform_create(self, serializer):
-        self.get_category_genres(serializer)
-
-    def perform_update(self, serializer):
-        self.get_category_genres(serializer)
-
+    def get_serializer_class(self):
+        if self.request.method in ["POST", "PATCH"]:
+            return TitlesWriteSerializer
+        return TitlesReadSerializer
 
 class ReviewViewSet(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
