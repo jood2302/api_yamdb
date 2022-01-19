@@ -1,4 +1,3 @@
-
 from django.contrib.auth.models import AbstractUser
 from reviews.validators import correct_year
 from django.core.validators import MinValueValidator, MaxValueValidator
