@@ -6,8 +6,6 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils import timezone
 
-from reviews.utils import USER, MODER, ADMIN
-
 
 class User(AbstractUser):
     """Модель пользователей.
@@ -19,11 +17,14 @@ class User(AbstractUser):
     role - роль
     confirmation_code - код подтверждения
     """
-
+    ADMIN = "admin"
+    MODER = "moderator"
+    USER = "user"
+    ME = "me"
     USER_CHOISES = [
-        (USER, USER),
-        (MODER, MODER),
-        (ADMIN, ADMIN)
+        (USER, "admin"),
+        (MODER, "moderator"),
+        (ADMIN, "user")
     ]
     username = models.CharField("Логин", max_length=150, unique=True)
     email = models.EmailField("Почта", max_length=254, unique=True)
@@ -45,7 +46,7 @@ class User(AbstractUser):
         "Роль",
         max_length=10,
         choices=USER_CHOISES,
-        default="user"
+        default=USER
     )
 
     confirmation_code = models.TextField(
@@ -57,9 +58,9 @@ class User(AbstractUser):
 
     def save(self, *args, **kwargs):
         if self.is_superuser:
-            self.role = ADMIN
+            self.role = self.ADMIN
 
-        if self.role == ADMIN:
+        if self.role == self.ADMIN:
             self.is_staff = True
         else:
             self.is_staff = False

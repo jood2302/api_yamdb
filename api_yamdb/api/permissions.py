@@ -1,6 +1,6 @@
 from rest_framework import permissions
 
-from reviews.utils import ADMIN, MODER
+from reviews.models import User
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
@@ -8,7 +8,7 @@ class IsAdminOrReadOnly(permissions.BasePermission):
     На изменение -  для админа."""
 
     def has_permission(self, request, view):
-        if request.user.is_authenticated and request.user.role == ADMIN:
+        if request.user.is_authenticated and request.user.role == User.ADMIN:
             return True
 
         elif request.method in permissions.SAFE_METHODS:
@@ -26,7 +26,7 @@ class IsUserOrAdminOrModerOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.user.is_authenticated:
             return obj.author == request.user or request.user.role in (
-                ADMIN,
-                MODER,
+                User.ADMIN,
+                User.MODER,
             )
         return request.method in permissions.SAFE_METHODS
