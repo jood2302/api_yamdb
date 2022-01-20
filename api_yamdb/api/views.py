@@ -5,14 +5,14 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Avg
 from rest_framework import filters, permissions, status, viewsets
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.pagination import (LimitOffsetPagination,
                                        PageNumberPagination)
 from rest_framework.response import Response
+
 from api_yamdb.settings import EMAIL_AUTH
 from .mixins import CreateListDestroy
 from reviews.models import Category, Comment, Genre, Review, Title, User
-
 from .filters import TitleFilter
 from .permissions import IsAdminOrReadOnly, IsUserOrAdminOrModerOrReadOnly
 from .serializers import (
@@ -126,7 +126,7 @@ def signup_user(request):
 def get_auth_token(request):
     serializer = UserAuthSerializer(data=request.data, many=False)
     if serializer.is_valid():
-        token = serializer.validated_data["token"]
+        token = serializer.data["token"]
         return Response({"token": token}, status=status.HTTP_200_OK)
 
     username_err = serializer.errors.get("username")
@@ -144,16 +144,15 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAdminUser,)
     lookup_field = "username"
 
-
-@api_view(["GET", "PATCH"])
-@permission_classes([permissions.IsAuthenticated])
-def users_me(request):
-    user = request.user
-    if request.method == "GET":
-        serializer = UserSerializer(user, many=False)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    elif request.method == "PATCH":
-        serializer = UserMeSerializer(user, data=request.data, many=False)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    @action(detail=False, methods=['get', 'patch'],
+            permission_classes=[permissions.IsAuthenticated])
+    def me(self, request):
+        user = request.user
+        if request.method == "GET":
+            serializer = UserSerializer(user, many=False)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        elif request.method == "PATCH":
+            serializer = UserMeSerializer(user, data=request.data, many=False)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
