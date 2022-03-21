@@ -2,6 +2,8 @@
 
 # курс Python-разработчик
 
+## студент  Leonid Slavutin
+
 ## Проект sprint_10.  Проект YaMDb.
 
 ***
