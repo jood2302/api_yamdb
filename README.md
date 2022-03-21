@@ -4,6 +4,8 @@
 
 ## студент  Leonid Slavutin
 
+![](https://avatars.githubusercontent.com/u/86873729?s=400&u=79ca75646b1a1eb2fade4f19d435a8ba65a1fe58&v=4)
+
 ## Проект sprint_10.  Проект YaMDb.
 
 ***
